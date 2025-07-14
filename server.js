@@ -66,7 +66,22 @@ app.post("/api/upload", authenticateToken, upload.single("resume"), async (req, 
 
     const score = scoreResume(extractedText, uniqueSkills);
 
+    // ✅ Job Matching Logic
+    const recommendedJobs = jobList.filter(job => {
+      const matched = job.skills.filter(skill =>
+        uniqueSkills.some(userSkill => userSkill.toLowerCase() === skill.toLowerCase())
+      );
+      return matched.length >= 2;
+    });
+
+    // ✅ Convert job.skills → skillsRequired for frontend
+    const jobsForFrontend = recommendedJobs.map(job => ({
+      ...job,
+      skillsRequired: job.skills,
+    }));
+
     console.log("✅ Skills saved:", uniqueSkills);
+    console.log("🎯 Jobs matched:", jobsForFrontend.length);
 
     res.json({
       message: "Upload successful",
@@ -74,12 +89,14 @@ app.post("/api/upload", authenticateToken, upload.single("resume"), async (req, 
       keywords: uniqueSkills,
       preview: extractedText.slice(0, 500),
       score,
+      jobs: jobsForFrontend, // 👈 frontend needs this
     });
   } catch (err) {
     console.error("❌ Resume parsing error:", err);
     res.status(500).json({ error: "Failed to parse resume" });
   }
 });
+
 
 // 💼 Recommend Jobs by Matching Skills
 app.get("/recommend-jobs", authenticateToken, async (req, res) => {
