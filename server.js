@@ -13,6 +13,7 @@ const { authenticateToken } = require("./middleware/authMiddleware");
 const User = require("./models/User");
 const leaderboardRoutes = require("./routes/leaderboard");
 const chatbotRoutes = require("./routes/chat");
+const jobList = require("./data/jobs"); // adjust path if needed
 
 const app = express();
 
@@ -66,6 +67,8 @@ app.post("/api/upload", authenticateToken, upload.single("resume"), async (req, 
 
     const score = scoreResume(extractedText, uniqueSkills);
 
+   
+
     // ✅ Job Matching Logic
     const recommendedJobs = jobList.filter(job => {
       const matched = job.skills.filter(skill =>
@@ -96,6 +99,7 @@ app.post("/api/upload", authenticateToken, upload.single("resume"), async (req, 
     res.status(500).json({ error: "Failed to parse resume" });
   }
 });
+
 
 
 // 💼 Recommend Jobs by Matching Skills
